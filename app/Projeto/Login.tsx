@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { router } from "expo-router";
 import { Text, TextInput, TouchableOpacity, View, StyleSheet} from "react-native";
 
 export default function Login() {
@@ -37,9 +38,14 @@ export default function Login() {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.botaoPrincipal}>
-          <Text style={styles.textoBotaoPrincipal}>Entrar</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+        style={styles.botaoPrincipal}
+        onPress={() => router.replace("/blocos")}
+      >
+        <Text style={styles.textoBotaoPrincipal}>
+          Entrar
+        </Text>
+      </TouchableOpacity>
       </View>
 
       {/* Divisor */}
