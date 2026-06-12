@@ -2,6 +2,7 @@
 // import { getContatos } from '@/src/api/contatosApi';
 import React from "react";
 import Cabecalho from "@/components/Cabecalho";
+import Dashboard from "@/components/Dashboard";
 
 export default function index() {
   // const contatos = getContatos();
@@ -21,7 +22,9 @@ export default function index() {
     //     renderItem={(({item, index}) => <Contato contato={item} key={index}/>)}
     //   />
     // </View>
-
-    <Cabecalho />
+      <>
+        <Cabecalho />
+        <Dashboard />
+      </>
   );
 }
