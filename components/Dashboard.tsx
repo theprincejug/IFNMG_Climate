@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { 
@@ -11,17 +11,12 @@ import {
   ChevronRight,
   TrendingUp
 } from 'lucide-react-native';
+import { ContextoSalas, Sala } from '@/contexts/ContextoSalas';
 
 export default function Dashboard() {
   // Hook para controlar a navegação
   const navigation = useNavigation<any>();
-
-  // Array com os dados das salas para não repetir muito código
-  const salasFavoritas = [
-    { id: 1, nome: 'Bloco A - Sala 101', status: '22°C • Esfriar', consumo: '~ 850W' },
-    { id: 2, nome: 'Bloco B - Sala 201', status: '23°C • Aquecer', consumo: '~ 920W' },
-    { id: 3, nome: 'Bloco C - Lab 301', status: '19°C • Esfriar', consumo: '~ 1100W' },
-  ];
+  const { salas } = useContext(ContextoSalas);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -127,8 +122,14 @@ export default function Dashboard() {
         </View>
 
         {/* Renderizando a lista de salas automaticamente */}
-        {salasFavoritas.map((sala) => (
-          <TouchableOpacity key={sala.id} style={styles.cardSala} activeOpacity={0.7} onPress={() => navigation.navigate('controleSala', { salaId: sala.id, nomeSala: sala.nome })}>
+        {salas.map((sala: Sala) => (
+          <TouchableOpacity 
+            key={sala.id} 
+            style={styles.cardSala} 
+            activeOpacity={0.7}
+            // Passamos apenas o ID agora!
+            onPress={() => navigation.navigate('controleSala', { salaId: sala.id })}
+          >
             <View style={[styles.iconeCirculo, { backgroundColor: '#ecfdf5' }]}>
               <Power color="#059669" size={20} />
             </View>

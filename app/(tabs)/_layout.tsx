@@ -1,8 +1,10 @@
 import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { ProvedorSalas } from '@/contexts/ContextoSalas';
 
 export default function TabLayout() {
   return (
+  <ProvedorSalas>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -67,5 +69,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+  </ProvedorSalas>
   );
 }
