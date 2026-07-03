@@ -24,11 +24,27 @@ export default function Blocos() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.titulo}>Blocos e Salas</Text>
+        <Text style={styles.titulo}>Blocos e Dispositivos</Text>
         <Text style={styles.subtitulo}>
-          Selecione uma sala para controlar
+          Selecione um dispositivo para controlar
         </Text>
       </View>
+
+      <View style={styles.containerBotoes}>
+      <TouchableOpacity
+        style={styles.botaoPrimario}
+        onPress={() => router.push("/Projeto/CadastrarBloco")}
+      >
+        <Text style={styles.textoPrimario}>+ Bloco</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.botaoSecundario}
+        onPress={() => router.push("/Projeto/CadastrarDispositivos")}
+      >
+        <Text style={styles.textoSecundario}>+ Dispositivo</Text>
+      </TouchableOpacity>
+    </View>
 
       {/* BLOCO A */}
       <View style={styles.blocoContainer}>
@@ -250,4 +266,62 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: "#94a3b8",
   },
+
+  botaoAdicionar: {
+    backgroundColor: "#10b981",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginHorizontal: 24,
+    marginBottom: 25,
+  },
+
+  textoAdicionar: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  containerBotoes: {
+  flexDirection: "row",
+  gap: 12,
+  paddingHorizontal: 24,
+  marginBottom: 25,
+},
+
+botaoPrimario: {
+  flex: 1,
+  backgroundColor: "#10b981",
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: "center",
+
+  shadowColor: "#10b981",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.25,
+  shadowRadius: 6,
+  elevation: 3,
+},
+
+botaoSecundario: {
+  flex: 1,
+  backgroundColor: "#ffffff",
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#10b981",
+},
+
+textoPrimario: {
+  color: "#fff",
+  fontWeight: "700",
+  fontSize: 15,
+},
+
+textoSecundario: {
+  color: "#10b981",
+  fontWeight: "700",
+  fontSize: 15,
+},
 });

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -12,6 +13,8 @@ export default function Agenda() {
   const [agenda101, setAgenda101] = useState(true);
   const [agenda201, setAgenda201] = useState(false);
   const [agendaLab, setAgendaLab] = useState(true);
+
+  const router = useRouter();
 
   return (
     <ScrollView style={styles.container}>
@@ -50,7 +53,8 @@ export default function Agenda() {
       </View>
 
       {/* Botão flutuante de adicionar */}
-      <TouchableOpacity style={styles.botaoAdicionar}>
+      <TouchableOpacity style={styles.botaoAdicionar}
+      onPress={() => router.push("/Projeto/CadastroDispositivoAgenda")}>
         <Text style={styles.botaoTexto}>+</Text>
       </TouchableOpacity>
     </ScrollView>

@@ -1,5 +1,4 @@
-import { login } from "@/src/api/auth";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   StyleSheet,
@@ -9,14 +8,19 @@ import {
   View,
 } from "react-native";
 
-export default function Login() {
-  const router = useRouter();
-
+export default function Cadastro() {
   const [email, setEmail] = useState("");
+  const [nome, setNome] = useState("");
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
 
-  const handleLogin = async () => {
+  const cadastrar = () => {
+    if (!nome.trim()) {
+      setErro("Preencha o nome.");
+      return;
+    }
+
     if (!email.trim()) {
       setErro("Preencha o e-mail.");
       return;
@@ -32,19 +36,18 @@ export default function Login() {
       return;
     }
 
-    try {
-      await login(email, senha);
-
-      router.push("/");
-    } catch (error: unknown) {
-      if (error instanceof Error && error.cause === "InvalidLoginCredentials") {
-        setErro(error.message);
-      } else {
-        setErro(
-          "Ocorreu um erro ao tentar fazer login. Aguarde enquanto resolvemos o problema.",
-        );
-      }
+    if (!confirmarSenha.trim()) {
+      setErro("Confirme a senha.");
+      return;
     }
+
+    if (senha !== confirmarSenha) {
+      setErro("As senhas não coincidem.");
+      return;
+    }
+
+    setErro("");
+    router.replace("/Projeto/Login");
   };
 
   return (
@@ -53,18 +56,35 @@ export default function Login() {
         <View style={styles.iconeContainer}>
           <Text style={styles.iconeTexto}>🌡</Text>
         </View>
+
         <Text style={styles.titulo}>IFNMG Climate</Text>
+
         <Text style={styles.subtitulo}>
           Sistema de Gerenciamento HVAC{"\n"}Campus Universitário
         </Text>
       </View>
 
       <View style={styles.formulario}>
+        <Text style={styles.label}>Nome</Text>
+        <TextInput
+          style={styles.input}
+          value={nome}
+          placeholder="Digite seu nome completo"
+          placeholderTextColor="rgba(0, 0, 0, 0.35)"
+          onChangeText={(text) => {
+            setNome(text);
+            setErro("");
+          }}
+        />
+
         <Text style={styles.label}>E-mail</Text>
         <TextInput
           style={styles.input}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setErro("");
+          }}
           placeholder="admin@ifnmg.edu.br"
           placeholderTextColor="rgba(0, 0, 0, 0.35)"
           keyboardType="email-address"
@@ -75,26 +95,44 @@ export default function Login() {
         <TextInput
           style={styles.input}
           value={senha}
-          onChangeText={setSenha}
+          onChangeText={(text) => {
+            setSenha(text);
+            setErro("");
+          }}
           placeholder="••••••••"
           placeholderTextColor="rgba(0, 0, 0, 0.35)"
           secureTextEntry
         />
 
-        {erro && <Text style={styles.mensagemErro}>{erro}</Text>}
+        <Text style={styles.label}>Confirmar Senha</Text>
+        <TextInput
+          style={styles.input}
+          value={confirmarSenha}
+          onChangeText={(text) => {
+            setConfirmarSenha(text);
+            setErro("");
+          }}
+          placeholder="••••••••"
+          placeholderTextColor="rgba(0, 0, 0, 0.35)"
+          secureTextEntry
+        />
 
-        <TouchableOpacity style={styles.botaoPrincipal} onPress={handleLogin}>
-          <Text style={styles.textoBotaoPrincipal}>Entrar</Text>
-        </TouchableOpacity>
-      </View>
+        {erro !== "" && (
+          <Text style={{ color: "red", marginBottom: 10 }}>{erro}</Text>
+        )}
 
-      <View style={styles.formulario}>
-        <TouchableOpacity
-          style={styles.botaoSecundario}
-          onPress={() => router.replace("/cadastro")}
-        >
-          <Text style={styles.textoBotaoSecundario}>Cadastre-se</Text>
+        <TouchableOpacity style={styles.botaoPrincipal} onPress={cadastrar}>
+          <Text style={styles.textoBotaoPrincipal}>Cadastre-se</Text>
         </TouchableOpacity>
+
+        <View style={styles.formulario}>
+          <TouchableOpacity
+            style={styles.botaoSecundario}
+            onPress={() => router.replace("/login")}
+          >
+            <Text style={styles.textoBotaoSecundario}>Voltar ao Login</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -196,15 +234,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
+    marginTop: 8,
   },
   textoBotaoSecundario: {
     color: "#334155",
     fontSize: 14,
     fontWeight: "500",
-  },
-  mensagemErro: {
-    color: "#059669",
-    fontWeight: "bold",
-    marginBottom: 16,
   },
 });

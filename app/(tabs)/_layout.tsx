@@ -4,6 +4,8 @@ import { ProvedorSalas } from '@/contexts/ContextoSalas';
 import { useEffect } from "react";
 import { isUsuarioLogado } from "@/src/api/auth";
 
+const rotasSemAutenticacao = ["/login", "/cadastro"];
+
 export default function TabLayout() {
   const router = useRouter();
   const pathname = usePathname();
@@ -17,7 +19,7 @@ export default function TabLayout() {
       }
     };
 
-    pathname !== '/login' && verificarLogin();
+    !rotasSemAutenticacao.includes(pathname) && verificarLogin();
   }, [router, pathname]);
 
   return (
