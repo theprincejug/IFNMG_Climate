@@ -4,10 +4,9 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  ScrollView,
-  SafeAreaView
+  ScrollView
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
   ChevronLeft, 
   MoreVertical, 
@@ -22,17 +21,15 @@ import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 // Importando o contexto global
 import { ContextoSalas, Sala } from '@/contexts/ContextoSalas';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 export default function ControleSala() {
-  const navigation = useNavigation();
-  const route = useRoute<any>();
-
-  // 1. Resgatando o ID passado pela tela Dashboard
-  const { salaId, nomeSala = 'SALA DESCONHECIDA' } = route.params || {};
+  const router = useRouter();
+  const { salaId, nomeSala = 'SALA DESCONHECIDA' } = useLocalSearchParams<{ salaId: string, nomeSala: string }>();
 
   // 2. Conectando com o Contexto Global
   const { salas, atualizarTemperatura } = useContext(ContextoSalas);
-  const salaAtual = salas?.find((s: Sala) => s.id === salaId);
+  const salaAtual = salas?.find((s: Sala) => s.id === Number(salaId));
 
   // Estados interativos da tela (puxando os dados iniciais do contexto, se existirem)
   const [ligado, setLigado] = useState(salaAtual ? salaAtual.ligado : true);
@@ -62,7 +59,7 @@ export default function ControleSala() {
     <SafeAreaView style={styles.container}>
       {/* ================= CABEÇALHO ================= */}
       <View style={styles.cabecalho}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoIcone}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.botaoIcone}>
           <ChevronLeft color="#64748b" size={28} />
         </TouchableOpacity>
         

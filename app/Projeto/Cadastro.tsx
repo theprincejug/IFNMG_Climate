@@ -1,6 +1,12 @@
-import { useState } from "react";
 import { router } from "expo-router";
-import { Text, TextInput, TouchableOpacity, View, StyleSheet} from "react-native";
+import { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Cadastro() {
   const [email, setEmail] = useState("");
@@ -8,7 +14,6 @@ export default function Cadastro() {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
-  
 
   const cadastrar = () => {
     if (!nome.trim()) {
@@ -22,9 +27,9 @@ export default function Cadastro() {
     }
 
     if (!email.endsWith("@ifnmg.edu.br")) {
-    setErro("O e-mail deve terminar com @ifnmg.edu.br.");
-    return;
-  }
+      setErro("O e-mail deve terminar com @ifnmg.edu.br.");
+      return;
+    }
 
     if (!senha.trim()) {
       setErro("Preencha a senha.");
@@ -64,6 +69,8 @@ export default function Cadastro() {
         <TextInput
           style={styles.input}
           value={nome}
+          placeholder="Digite seu nome completo"
+          placeholderTextColor="rgba(0, 0, 0, 0.35)"
           onChangeText={(text) => {
             setNome(text);
             setErro("");
@@ -111,19 +118,21 @@ export default function Cadastro() {
         />
 
         {erro !== "" && (
-          <Text style={{ color: "red", marginBottom: 10 }}>
-            {erro}
-          </Text>
+          <Text style={{ color: "red", marginBottom: 10 }}>{erro}</Text>
         )}
 
-        <TouchableOpacity
-          style={styles.botaoSecundario}
-          onPress={cadastrar}
-        >
-          <Text style={styles.textoBotaoSecundario}>
-            Cadastre-se
-          </Text>
+        <TouchableOpacity style={styles.botaoPrincipal} onPress={cadastrar}>
+          <Text style={styles.textoBotaoPrincipal}>Cadastre-se</Text>
         </TouchableOpacity>
+
+        <View style={styles.formulario}>
+          <TouchableOpacity
+            style={styles.botaoSecundario}
+            onPress={() => router.replace("/login")}
+          >
+            <Text style={styles.textoBotaoSecundario}>Voltar ao Login</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -148,7 +157,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
-    elevation: 4, 
+    elevation: 4,
     shadowColor: "#059669",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -225,6 +234,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
+    marginTop: 8,
   },
   textoBotaoSecundario: {
     color: "#334155",

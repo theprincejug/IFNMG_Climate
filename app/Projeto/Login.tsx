@@ -1,33 +1,53 @@
+import { login } from "@/src/api/auth";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { router } from "expo-router";
-import { Text, TextInput, TouchableOpacity, View, StyleSheet} from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Login() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
 
-  const entrar = () => {
-  if (!email.trim()) {
-    setErro("Preencha o e-mail.");
-    return;
-  }
+  const handleLogin = async () => {
+    if (!email.trim()) {
+      setErro("Preencha o e-mail.");
+      return;
+    }
 
-  if (!email.endsWith("@ifnmg.edu.br")) {
-    setErro("O e-mail deve terminar com @ifnmg.edu.br.");
-    return;
-  }
+    if (!email.endsWith("@ifnmg.edu.br")) {
+      setErro("O e-mail deve terminar com @ifnmg.edu.br.");
+      return;
+    }
 
-  if (!senha.trim()) {
-    setErro("Preencha a senha.");
-    return;
-  }
+    if (!senha.trim()) {
+      setErro("Preencha a senha.");
+      return;
+    }
 
-  setErro("");
-  router.replace("/(tabs)");
-};
+    try {
+      await login(email, senha);
 
-    return (
+      router.push("/");
+    } catch (error: unknown) {
+      if (error instanceof Error && error.cause === "InvalidLoginCredentials") {
+        setErro(error.message);
+      } else {
+        setErro(
+          "Ocorreu um erro ao tentar fazer login. Aguarde enquanto resolvemos o problema.",
+        );
+      }
+    }
+  };
+
+  return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
         <View style={styles.iconeContainer}>
@@ -61,45 +81,21 @@ export default function Login() {
           secureTextEntry
         />
 
-        {erro !== "" && (
-          <Text style={{ color: "red", marginBottom: 10 }}>
-            {erro}
-          </Text>
-        )}
+        {erro && <Text style={styles.mensagemErro}>{erro}</Text>}
 
-        <TouchableOpacity
-        style={styles.botaoPrincipal}
-        onPress={entrar}
-      >
-        <Text style={styles.textoBotaoPrincipal}>
-          Entrar
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.botaoPrincipal} onPress={handleLogin}>
+          <Text style={styles.textoBotaoPrincipal}>Entrar</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.formulario}>
-      <TouchableOpacity
-        style={styles.botaoSecundario}
-        onPress={() => router.replace("/Projeto/Cadastro")}
-      >
-        <Text style={styles.textoBotaoSecundario}>
-          Cadastre-se
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.botaoSecundario}
+          onPress={() => router.replace("/cadastro")}
+        >
+          <Text style={styles.textoBotaoSecundario}>Cadastre-se</Text>
+        </TouchableOpacity>
       </View>
-
-      {/* Divisor */}
-      <View style={styles.divisorContainer}>
-        <View style={styles.linhaDivisora} />
-        <Text style={styles.textoDivisor}>ou continue com</Text>
-        <View style={styles.linhaDivisora} />
-      </View>
-
-      <TouchableOpacity style={styles.botaoSecundario}>
-        <Text style={styles.textoBotaoSecundario}>
-          Entrar com Matrícula Institucional
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -123,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
-    elevation: 4, 
+    elevation: 4,
     shadowColor: "#059669",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -205,5 +201,10 @@ const styles = StyleSheet.create({
     color: "#334155",
     fontSize: 14,
     fontWeight: "500",
+  },
+  mensagemErro: {
+    color: "#059669",
+    fontWeight: "bold",
+    marginBottom: 16,
   },
 });
