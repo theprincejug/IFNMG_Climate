@@ -1,8 +1,25 @@
-import { Tabs } from "expo-router";
+import { Tabs, usePathname, useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ProvedorSalas } from '@/contexts/ContextoSalas';
+import { useEffect } from "react";
+import { isUsuarioLogado } from "@/src/api/auth";
 
 export default function TabLayout() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const verificarLogin = async () => {
+      const usuarioLogado = await isUsuarioLogado();
+
+      if (!usuarioLogado) {
+        router.push("/login");
+      }
+    };
+
+    pathname !== '/login' && verificarLogin();
+  }, [router, pathname]);
+
   return (
   <ProvedorSalas>
     <Tabs
@@ -31,7 +48,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Início",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <Ionicons
               name="home-outline"
               size={20}
@@ -45,7 +62,7 @@ export default function TabLayout() {
         name="blocos"
         options={{
           title: "Blocos",
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <Ionicons
               name="grid-outline"
               size={20}
@@ -59,7 +76,7 @@ export default function TabLayout() {
         name="agenda"
         options={{
           title: "Agenda",
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <Ionicons
               name="calendar-outline"
               size={20}
