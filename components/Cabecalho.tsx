@@ -1,12 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { router } from "expo-router";
 import { LogOut, Bell } from 'lucide-react-native';
 
 export default function Cabecalho() {
   return (
     <View style={styles.container}>
-      {/* Botão Sair (Esquerda) */}
-      <TouchableOpacity style={styles.botaoIcone} activeOpacity={0.7}>
+      {/* Botão Sair */}
+      <TouchableOpacity
+        style={styles.botaoIcone}
+        onPress={() => router.push("/Projeto/Login")}
+      >
         <LogOut color="#64748b" size={24} />
       </TouchableOpacity>
 
@@ -16,10 +20,9 @@ export default function Cabecalho() {
         <Text style={styles.subtitulo}>Sistema de Controle HVAC</Text>
       </View>
 
-      {/* Botão Notificação (Direita) */}
+      {/* Botão Notificação */}
       <TouchableOpacity style={styles.botaoIcone} activeOpacity={0.7}>
         <Bell color="#64748b" size={24} />
-        {/* Bolinha verde indicando nova notificação */}
         <View style={styles.indicadorVerde} />
       </TouchableOpacity>
     </View>

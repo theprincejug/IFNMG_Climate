@@ -2,49 +2,82 @@ import { useState } from "react";
 import { router } from "expo-router";
 import { Text, TextInput, TouchableOpacity, View, StyleSheet} from "react-native";
 
-export default function Login() {
+export default function Cadastro() {
   const [email, setEmail] = useState("");
+  const [nome, setNome] = useState("");
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
+  
 
-  const entrar = () => {
-  if (!email.trim()) {
-    setErro("Preencha o e-mail.");
-    return;
-  }
+  const cadastrar = () => {
+    if (!nome.trim()) {
+      setErro("Preencha o nome.");
+      return;
+    }
 
-  if (!email.endsWith("@ifnmg.edu.br")) {
+    if (!email.trim()) {
+      setErro("Preencha o e-mail.");
+      return;
+    }
+
+    if (!email.endsWith("@ifnmg.edu.br")) {
     setErro("O e-mail deve terminar com @ifnmg.edu.br.");
     return;
   }
 
-  if (!senha.trim()) {
-    setErro("Preencha a senha.");
-    return;
-  }
+    if (!senha.trim()) {
+      setErro("Preencha a senha.");
+      return;
+    }
 
-  setErro("");
-  router.replace("/(tabs)");
-};
+    if (!confirmarSenha.trim()) {
+      setErro("Confirme a senha.");
+      return;
+    }
 
-    return (
+    if (senha !== confirmarSenha) {
+      setErro("As senhas não coincidem.");
+      return;
+    }
+
+    setErro("");
+    router.replace("/Projeto/Login");
+  };
+
+  return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
         <View style={styles.iconeContainer}>
           <Text style={styles.iconeTexto}>🌡</Text>
         </View>
+
         <Text style={styles.titulo}>IFNMG Climate</Text>
+
         <Text style={styles.subtitulo}>
           Sistema de Gerenciamento HVAC{"\n"}Campus Universitário
         </Text>
       </View>
 
       <View style={styles.formulario}>
+        <Text style={styles.label}>Nome</Text>
+        <TextInput
+          style={styles.input}
+          value={nome}
+          onChangeText={(text) => {
+            setNome(text);
+            setErro("");
+          }}
+        />
+
         <Text style={styles.label}>E-mail</Text>
         <TextInput
           style={styles.input}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setErro("");
+          }}
           placeholder="admin@ifnmg.edu.br"
           placeholderTextColor="rgba(0, 0, 0, 0.35)"
           keyboardType="email-address"
@@ -55,7 +88,23 @@ export default function Login() {
         <TextInput
           style={styles.input}
           value={senha}
-          onChangeText={setSenha}
+          onChangeText={(text) => {
+            setSenha(text);
+            setErro("");
+          }}
+          placeholder="••••••••"
+          placeholderTextColor="rgba(0, 0, 0, 0.35)"
+          secureTextEntry
+        />
+
+        <Text style={styles.label}>Confirmar Senha</Text>
+        <TextInput
+          style={styles.input}
+          value={confirmarSenha}
+          onChangeText={(text) => {
+            setConfirmarSenha(text);
+            setErro("");
+          }}
           placeholder="••••••••"
           placeholderTextColor="rgba(0, 0, 0, 0.35)"
           secureTextEntry
@@ -68,38 +117,14 @@ export default function Login() {
         )}
 
         <TouchableOpacity
-        style={styles.botaoPrincipal}
-        onPress={entrar}
-      >
-        <Text style={styles.textoBotaoPrincipal}>
-          Entrar
-        </Text>
-      </TouchableOpacity>
+          style={styles.botaoSecundario}
+          onPress={cadastrar}
+        >
+          <Text style={styles.textoBotaoSecundario}>
+            Cadastre-se
+          </Text>
+        </TouchableOpacity>
       </View>
-
-      <View style={styles.formulario}>
-      <TouchableOpacity
-        style={styles.botaoSecundario}
-        onPress={() => router.replace("/Projeto/Cadastro")}
-      >
-        <Text style={styles.textoBotaoSecundario}>
-          Cadastre-se
-        </Text>
-      </TouchableOpacity>
-      </View>
-
-      {/* Divisor */}
-      <View style={styles.divisorContainer}>
-        <View style={styles.linhaDivisora} />
-        <Text style={styles.textoDivisor}>ou continue com</Text>
-        <View style={styles.linhaDivisora} />
-      </View>
-
-      <TouchableOpacity style={styles.botaoSecundario}>
-        <Text style={styles.textoBotaoSecundario}>
-          Entrar com Matrícula Institucional
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }
