@@ -22,7 +22,7 @@ export default function Login() {
       return;
     }
 
-    if (!email.endsWith("@ifnmg.edu.br")) {
+    if (!email.endsWith("ifnmg.edu.br")) {
       setErro("O e-mail deve terminar com @ifnmg.edu.br.");
       return;
     }

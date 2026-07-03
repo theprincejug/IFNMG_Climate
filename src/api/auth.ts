@@ -1,5 +1,12 @@
 import { supabase } from "@/lib/supabase";
 
+export type Usuario = {
+    id: string;
+    nome: string;
+    email: string;
+    senha: string;
+}
+
 export const isUsuarioLogado = async () => {
   const { data, error } = await supabase.auth.getUser();
 
@@ -52,4 +59,27 @@ export const logout = async () => {
     if (error) {
         throw new Error("Erro ao realizar logout.");
     }
+}
+
+export const cadastrar = async (usuario: Omit<Usuario, 'id'>) => {
+    const { data, error } = await supabase.auth.signUp({
+        email: usuario.email,
+        password: usuario.senha,
+        options: {
+            data: {
+                display_name: usuario.nome,
+            }
+        }
+    });
+
+    if (error && error.code === 'user_already_exists') {
+        throw new Error("O e-mail fornecido já está em uso. Por favor, utilize outro e-mail.", { cause: 'InvalidRegisterCredentials' });
+    }
+
+    if (error) {
+        console.table(error);
+        throw new Error("Ocorreu um erro ao realizar o cadastro. Por favor, tente novamente.");
+    }
+
+    return data.user;
 }

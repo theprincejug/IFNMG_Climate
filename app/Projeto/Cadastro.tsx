@@ -1,3 +1,4 @@
+import { cadastrar } from "@/src/api/auth";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -15,7 +16,7 @@ export default function Cadastro() {
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
 
-  const cadastrar = () => {
+  const handleCadastrar = async () => {
     if (!nome.trim()) {
       setErro("Preencha o nome.");
       return;
@@ -26,7 +27,7 @@ export default function Cadastro() {
       return;
     }
 
-    if (!email.endsWith("@ifnmg.edu.br")) {
+    if (!email.endsWith("ifnmg.edu.br")) {
       setErro("O e-mail deve terminar com @ifnmg.edu.br.");
       return;
     }
@@ -46,8 +47,22 @@ export default function Cadastro() {
       return;
     }
 
-    setErro("");
-    router.replace("/Projeto/Login");
+    try {
+      await cadastrar({ nome, email, senha });
+
+      router.replace("/login");
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.cause === "InvalidRegisterCredentials"
+      ) {
+        setErro(error.message);
+      } else if (error instanceof Error) {
+        setErro(
+          "Ocorreu um erro ao realizar o cadastro. Por favor, tente novamente.",
+        );
+      }
+    }
   };
 
   return (
@@ -118,10 +133,13 @@ export default function Cadastro() {
         />
 
         {erro !== "" && (
-          <Text style={{ color: "red", marginBottom: 10 }}>{erro}</Text>
+          <Text style={{ color: "#059669", marginBottom: 10 }}>{erro}</Text>
         )}
 
-        <TouchableOpacity style={styles.botaoPrincipal} onPress={cadastrar}>
+        <TouchableOpacity
+          style={styles.botaoPrincipal}
+          onPress={handleCadastrar}
+        >
           <Text style={styles.textoBotaoPrincipal}>Cadastre-se</Text>
         </TouchableOpacity>
 
