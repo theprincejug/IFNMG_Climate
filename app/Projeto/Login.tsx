@@ -1,12 +1,36 @@
+import { login } from "@/src/api/auth";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { router } from "expo-router";
-import { Text, TextInput, TouchableOpacity, View, StyleSheet} from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Login() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  
-    return (
+  const [erro, setErro] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      await login(email, senha);
+
+      router.push("/");
+    } catch (error: unknown) {
+      if (error instanceof Error && error.cause === "InvalidLoginCredentials") {
+        setErro(error.message);
+      } else {
+        setErro("Ocorreu um erro ao tentar fazer login. Aguarde enquanto resolvemos o problema.");
+      }
+    }
+  };
+
+  return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
         <View style={styles.iconeContainer}>
@@ -38,28 +62,12 @@ export default function Login() {
           secureTextEntry
         />
 
-        <TouchableOpacity
-        style={styles.botaoPrincipal}
-        onPress={() => router.replace("/blocos")}
-      >
-        <Text style={styles.textoBotaoPrincipal}>
-          Entrar
-        </Text>
-      </TouchableOpacity>
-      </View>
+        {erro && <Text style={styles.mensagemErro}>{erro}</Text>}
 
-      {/* Divisor */}
-      <View style={styles.divisorContainer}>
-        <View style={styles.linhaDivisora} />
-        <Text style={styles.textoDivisor}>ou continue com</Text>
-        <View style={styles.linhaDivisora} />
+        <TouchableOpacity style={styles.botaoPrincipal} onPress={handleLogin}>
+          <Text style={styles.textoBotaoPrincipal}>Entrar</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity style={styles.botaoSecundario}>
-        <Text style={styles.textoBotaoSecundario}>
-          Entrar com Matrícula Institucional
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -83,7 +91,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
-    elevation: 4, 
+    elevation: 4,
     shadowColor: "#059669",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -165,5 +173,10 @@ const styles = StyleSheet.create({
     color: "#334155",
     fontSize: 14,
     fontWeight: "500",
+  },
+  mensagemErro: {
+    color: "#059669",
+    fontWeight: "bold",
+    marginBottom: 16
   },
 });
