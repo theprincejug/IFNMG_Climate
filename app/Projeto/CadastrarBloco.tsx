@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import {
   Text,
@@ -13,21 +14,31 @@ export default function CadastroBloco() {
   const [erro, setErro] = useState("");
   const [blocos, setBlocos] = useState<string[]>([]);
 
-  const cadastrar = () => {
-  if (!nome.trim()) {
-    setErro("Preencha o nome do bloco.");
-    return;
-  }
+  const cadastrar = async () => {
+    if (!nome.trim()) {
+      setErro("Preencha o nome do bloco.");
+      return;
+    }
 
-  // aqui você pode salvar depois em API ou estado global
-  console.log("Bloco criado:", nome);
+    setErro("");
 
-  setNome("");
-  setErro("");
+    const { error } = await supabase
+      .from("blocos")
+      .insert({
+        nome: nome.trim(),
+      });
 
-  // volta pra tela de blocos
-  router.replace("/Projeto/Blocos");
+    if (error) {
+      console.log(error);
+      setErro(error.message);
+      return;
+    }
 
+    console.log("Bloco criado:", nome);
+
+    setNome("");
+
+    router.replace("/Projeto/Blocos");
   };
 
   return (

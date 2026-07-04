@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,17 +9,89 @@ import {
   TouchableOpacity,
 } from "react-native";
 
+import { supabase } from "@/lib/supabase";
+
+// Interfaces para tipagem do TypeScript
+interface Dispositivo {
+  id: string;
+  nome: string;
+  temperatura: string;
+  ligado: boolean;
+}
+
+interface Bloco {
+  id: string;
+  nome: string;
+  dispositivos: Dispositivo[]; // Lista de salas/dispositivos dentro do bloco
+}
+
 export default function Blocos() {
+  const router = useRouter();
+  const [blocos, setBlocos] = useState<Bloco[]>([]);
+
+  // Estados antigos (mantidos para não quebrar o bloco fixo se precisar)
   const [sala101, setSala101] = useState(true);
   const [sala102, setSala102] = useState(true);
   const [sala103, setSala103] = useState(false);
-  const [sala201, setSala201] = useState(true);
-  const [sala202, setSala202] = useState(false);
-  const [sala203, setSala203] = useState(true);
-  const [lab301, setLab301] = useState(false);
-  const [lab302, setLab302] = useState(true);
 
-  const router = useRouter();
+  useEffect(() => {
+    const buscarBlocos = async () => {
+      const { data, error }: { data: Bloco[] | null; error: any } = await supabase
+        .from("blocos")
+        .select(`
+          id,
+          nome,
+          dispositivos!left (
+            id,
+            nome,
+            temperatura,
+            estado
+          )
+        `);
+  
+      if (error) {
+        console.log("Erro ao buscar blocos:", error);
+        return;
+      }
+
+      
+      setBlocos(data || []);
+    };
+    
+    buscarBlocos();
+  }, []);
+  
+  console.log("BLOCOS DATA:", blocos);
+
+  // Função para alternar o Switch na lista dinâmica do Supabase
+  const alternarDispositivo = async (blocoId: string, dispositivoId: string, valorAtual: boolean) => {
+    const novoValor = !valorAtual;
+
+    // 1. Atualiza no banco de dados (ajuste o nome da tabela se necessário)
+    const { error } = await supabase
+      .from("dispositivos")
+      .update({ ligado: novoValor })
+      .eq("id", dispositivoId);
+
+    if (error) {
+      console.log("Erro ao atualizar dispositivo:", error);
+      return;
+    }
+
+    // 2. Atualiza no estado local para refletir na tela imediatamente
+    setBlocos((blocosAnteriores) =>
+      blocosAnteriores.map((bloco) => {
+        if (bloco.id !== blocoId) return bloco;
+
+        return {
+          ...bloco,
+          dispositivos: bloco.dispositivos.map((disp) =>
+            disp.id === dispositivoId ? { ...disp, ligado: novoValor } : disp
+          ),
+        };
+      })
+    );
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -30,152 +102,90 @@ export default function Blocos() {
         </Text>
       </View>
 
+      {/* BOTÕES */}
       <View style={styles.containerBotoes}>
-      <TouchableOpacity
-        style={styles.botaoPrimario}
-        onPress={() => router.push("/Projeto/CadastrarBloco")}
-      >
-        <Text style={styles.textoPrimario}>+ Bloco</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.botaoPrimario}
+          onPress={() => router.push("/Projeto/CadastrarBloco")}
+        >
+          <Text style={styles.textoPrimario}>+ Bloco</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.botaoSecundario}
-        onPress={() => router.push("/Projeto/CadastrarDispositivos")}
-      >
-        <Text style={styles.textoSecundario}>+ Dispositivo</Text>
-      </TouchableOpacity>
-    </View>
-
-      {/* BLOCO A */}
-      <View style={styles.blocoContainer}>
-        <Text style={styles.blocoTitulo}>BLOCO A</Text>
-
-        <View style={styles.card}>
-          <SalaItem
-            nome="Sala 101"
-            temperatura="22°C"
-            ligado={sala101}
-            setLigado={setSala101}
-          />
-
-          <SalaItem
-            nome="Sala 102"
-            temperatura="24°C"
-            ligado={sala102}
-            setLigado={setSala102}
-          />
-
-          <SalaItem
-            nome="Sala 103"
-            temperatura="20°C"
-            ligado={sala103}
-            setLigado={setSala103}
-            ultimo
-          />
-        </View>
+        <TouchableOpacity
+          style={styles.botaoSecundario}
+          onPress={() => router.push("/Projeto/CadastrarDispositivos")}
+        >
+          <Text style={styles.textoSecundario}>+ Dispositivo</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* BLOCO B */}
-      <View style={styles.blocoContainer}>
-        <Text style={styles.blocoTitulo}>BLOCO B</Text>
+      {/* BLOCOS DINÂMICOS DO SUPABASE */}
+      {blocos.map((bloco) => (
+        <View key={bloco.id} style={styles.blocoContainer}>
+          <Text style={styles.blocoTitulo}>{bloco.nome}</Text>
 
-        <View style={styles.card}>
-          <SalaItem
-            nome="Sala 201"
-            temperatura="23°C"
-            ligado={sala201}
-            setLigado={setSala201}
-            ultimo
-          />
-          <SalaItem
-            nome="Sala 202"
-            temperatura="21°C"
-            ligado={sala202}
-            setLigado={setSala202}
-          />
-          <SalaItem
-            nome="Sala 203"
-            temperatura="25°C"
-            ligado={sala203}
-            setLigado={setSala203}
-            ultimo
-          />
+          <View style={styles.card}>
+            {bloco.dispositivos && bloco.dispositivos.length > 0 ? (
+              bloco.dispositivos.map((disp) => (
+                <SalaItem
+                  key={disp.id}
+                  nome={disp.nome}
+                  temperatura={disp.temperatura || "N/A"}
+                  ligado={disp.ligado}
+                  setLigado={() => alternarDispositivo(bloco.id, disp.id, disp.ligado)}
+                />
+              ))
+            ) : (
+              <Text style={{ padding: 16, color: "#64748b" }}>
+                Nenhum dispositivo carregado ainda
+              </Text>
+            )}
+          </View>
         </View>
-      </View>
+      ))}
 
-      {/* BLOCO C */}
-      <View style={styles.blocoContainer}>
-        <Text style={styles.blocoTitulo}>BLOCO C</Text>
-
-        <View style={styles.card}>
-          <SalaItem
-            nome="Lab 301"
-            temperatura="19°C"
-            ligado={lab301}
-            setLigado={setLab301}
-            ultimo
-          />
-          <SalaItem
-            nome="Lab 302"
-            temperatura="21°C"
-            ligado={lab302}
-            setLigado={setLab302}
-          />
-        </View>
-      </View>
     </ScrollView>
   );
 }
+
+/* ================= ITEM ================= */
 
 interface SalaItemProps {
   nome: string;
   temperatura: string;
   ligado: boolean;
-  setLigado: React.Dispatch<React.SetStateAction<boolean>>;
-  ultimo?: boolean;
+  setLigado: (valor: boolean) => void;
 }
 
-function SalaItem({
-  nome,
-  temperatura,
-  ligado,
-  setLigado,
-  ultimo = false,
-}: SalaItemProps) {
+function SalaItem({ nome, temperatura, ligado, setLigado }: SalaItemProps) {
   const router = useRouter();
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.salaItem,
-        !ultimo && styles.bordaInferior,
-      ]}
-    >
+    <TouchableOpacity style={styles.salaItem}>
       <View>
         <Text style={styles.nomeSala}>{nome}</Text>
         <Text style={styles.temperatura}>🌡 {temperatura}</Text>
       </View>
 
       <View style={styles.acoes}>
-  <Switch
-    value={ligado}
-    onValueChange={setLigado}
-    trackColor={{
-      false: "#cbd5e1",
-      true: "#10b981",
-    }}
-    thumbColor="#fff"
-  />
+        <Switch
+          value={ligado}
+          onValueChange={setLigado}
+          trackColor={{
+            false: "#cbd5e1",
+            true: "#10b981",
+          }}
+          thumbColor="#fff"
+        />
 
-<TouchableOpacity
-  onPress={() => router.push("/controleSala")}
->
-  <Text style={styles.seta}>›</Text>
-</TouchableOpacity>
-</View>
+        <TouchableOpacity onPress={() => router.push("/controleSala")}>
+          <Text style={styles.seta}>›</Text>
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 }
+/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   container: {
@@ -184,9 +194,8 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    paddingHorizontal: 24,
+    padding: 24,
     paddingTop: 60,
-    paddingBottom: 24,
   },
 
   titulo: {
@@ -198,62 +207,73 @@ const styles = StyleSheet.create({
   subtitulo: {
     marginTop: 6,
     color: "#64748b",
-    fontSize: 14,
+  },
+
+  containerBotoes: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    marginBottom: 20,
+  },
+
+  botaoPrimario: {
+    flex: 1,
+    backgroundColor: "#10b981",
+    padding: 12,
+    borderRadius: 10,
+    marginRight: 10,
+    alignItems: "center",
+  },
+
+  botaoSecundario: {
+    flex: 1,
+    backgroundColor: "#e2e8f0",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  textoPrimario: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+
+  textoSecundario: {
+    color: "#0f172a",
+    fontWeight: "bold",
   },
 
   blocoContainer: {
     paddingHorizontal: 24,
-    marginBottom: 30,
+    marginBottom: 20,
   },
 
   blocoTitulo: {
+    fontSize: 16,
+    fontWeight: "700",
     color: "#64748b",
-    fontWeight: "600",
-    fontSize: 15,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: "#10b981",
-    paddingLeft: 8,
+    marginBottom: 10,
   },
 
   card: {
     backgroundColor: "#fff",
-    borderRadius: 18,
-    overflow: "hidden",
-
-    elevation: 2,
-
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    borderRadius: 12,
+    padding: 10,
   },
 
   salaItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 18,
-  },
-
-  bordaInferior: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    padding: 16,
   },
 
   nomeSala: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
-    color: "#0f172a",
   },
 
   temperatura: {
-    marginTop: 4,
     color: "#64748b",
-    fontSize: 14,
   },
 
   acoes: {
@@ -263,65 +283,8 @@ const styles = StyleSheet.create({
   },
 
   seta: {
-    fontSize: 26,
+    fontSize: 22,
     color: "#94a3b8",
+    marginLeft: 10,
   },
-
-  botaoAdicionar: {
-    backgroundColor: "#10b981",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginHorizontal: 24,
-    marginBottom: 25,
-  },
-
-  textoAdicionar: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-
-  containerBotoes: {
-  flexDirection: "row",
-  gap: 12,
-  paddingHorizontal: 24,
-  marginBottom: 25,
-},
-
-botaoPrimario: {
-  flex: 1,
-  backgroundColor: "#10b981",
-  paddingVertical: 14,
-  borderRadius: 12,
-  alignItems: "center",
-
-  shadowColor: "#10b981",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.25,
-  shadowRadius: 6,
-  elevation: 3,
-},
-
-botaoSecundario: {
-  flex: 1,
-  backgroundColor: "#ffffff",
-  paddingVertical: 14,
-  borderRadius: 12,
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#10b981",
-},
-
-textoPrimario: {
-  color: "#fff",
-  fontWeight: "700",
-  fontSize: 15,
-},
-
-textoSecundario: {
-  color: "#10b981",
-  fontWeight: "700",
-  fontSize: 15,
-},
 });
